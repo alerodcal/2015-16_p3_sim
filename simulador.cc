@@ -77,9 +77,9 @@ main (int argc, char *argv[])
   plot1.SetTitle("Gráfica 1 Práctica 03");
 
   //Iteramos 5 veces
-  //5 valores para el retardo de propagacion.
-        retPropagacion <= retardoPropHasta.GetDouble(); 
+  //5 valores para el retardo de propagacion. 
   for (double retPropagacion = retardoPropDesde.GetDouble(); 
+        retPropagacion <= retardoPropHasta.GetDouble();
         retPropagacion += incrementoRetProp) 
   {
 
