@@ -8,11 +8,17 @@
 #include <ns3/command-line.h>
 #include <ns3/gnuplot.h>
 #include <sstream>
+#include <ns3/average.h>
 #include "BitAlternante.h"
 
 #define TAMPKT 994
 #define NUMCURVAS 5
 #define NUMPUNTOS 10
+
+//numero de iteraciones para obtener el IC al 90%.
+#define ITERACIONES_IC 10
+//Parametro de t_student para IC del 90% con 10 grados de libertad.
+#define TSTUDENT10 1.8331
 
 using namespace ns3;
 
@@ -91,7 +97,7 @@ main (int argc, char *argv[])
     Gnuplot2dDataset datos1 (result);
     datos1.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
-    //datos1.SetErrorBars (Gnuplot2dDataset::Y);
+    datos1.SetErrorBars (Gnuplot2dDataset::Y);
 
     //Obtenemos los datos de una curva por medio de 10 simulaciones
     obtenerCurva (&datos1, tRetransmisionDesde, tRetransmisionHasta, TAMPKT, retPropagacion, velTxMedia);
@@ -129,7 +135,7 @@ main (int argc, char *argv[])
     Gnuplot2dDataset datos2 (result);
     datos2.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
-    //datos2.SetErrorBars (Gnuplot2dDataset::Y);
+    datos2.SetErrorBars (Gnuplot2dDataset::Y);
 
     //Obtenemos los datos de una curva por medio de 10 simulaciones
     obtenerCurva (&datos2, tRetransmisionDesde, tRetransmisionHasta, TAMPKT, retPropagacionMedio, velocidadTx);
@@ -154,6 +160,10 @@ void obtenerCurva (Gnuplot2dDataset *datosGrafica, Time tRetransmisionDesde,
                                   Time tRetransmisionHasta, int tamPktB, 
                                   double retPropagacion, uint64_t velTx) 
 {
+  //Variable donde guardaremos el error del intervalo de confianza.
+  double z = 0.0;
+  //Variable donde guardaremos 10 muestras de cada punto para obtener el intervalo de confianza.
+  Average<uint32_t> ac_resultados;
 
   /////incremento en el temporizador de retransmision.
   double incrementoTempRet = (tRetransmisionHasta.GetDouble() - tRetransmisionDesde.GetDouble())/(NUMPUNTOS-1);
@@ -202,13 +212,29 @@ void obtenerCurva (Gnuplot2dDataset *datosGrafica, Time tRetransmisionDesde,
     transmisor.SetStartTime (Seconds (1.0));
     transmisor.SetStopTime (Seconds (10.0));
 
-    NS_LOG_UNCOND ("Voy a simular con: " << tempRetransmision);
-    Simulator::Run ();
-    Simulator::Destroy ();
+    //Hacemos ITERACIONES_IC iteraciones en el mismo punto para obetener
+    //los datos para calcular el intervalo de confiaza al 90%.
+    for (int iteracion = 0; iteracion <= ITERACIONES_IC; iteracion++)
+    {
+      NS_LOG_UNCOND ("Voy a simular con: " << tempRetransmision);
+      Simulator::Run ();
+      Simulator::Destroy ();
 
-    NS_LOG_UNCOND ("Total paquetes: " << transmisor.TotalDatos());
-               
+      //Guardamos el dato en la variable Average.
+      ac_resultados.Update(transmisor.TotalDatos());
+
+      NS_LOG_UNCOND ("Total paquetes: " << transmisor.TotalDatos());
+    }
+
+    //Calculamos el intervalo de confianza al 90%.
+    z = TSTUDENT10*sqrt(ac_resultados.Var()/(ITERACIONES_IC));
+    NS_LOG_INFO ("z = " << z);
+
     //Añadimos datos a la gráfica
-    datosGrafica->Add(tempRetransmision, transmisor.TotalDatos());
+    datosGrafica->Add(tempRetransmision, ac_resultados.Mean(), z);
+
+    //Reseteamos la variable Average para la siguiente iteracion
+    ac_resultados.Reset();
+
   }
 }
