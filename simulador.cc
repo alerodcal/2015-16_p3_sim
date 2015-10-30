@@ -15,9 +15,10 @@
 #define NUMCURVAS 5
 #define NUMPUNTOS 10
 
-//numero de iteraciones para obtener el IC al 90%.
+//El intervalo al 100% es el punto en cuestion.
+//numero de iteraciones para obtener el IC al 100%.
 #define ITERACIONES_IC 10
-//Parametro de t_student para IC del 90% con 10 grados de libertad.
+//Parametro de t_student para IC del 100% con 10 grados de libertad.
 #define TSTUDENT10 1.8331
 
 using namespace ns3;
@@ -226,7 +227,7 @@ void obtenerCurva (Gnuplot2dDataset *datosGrafica, Time tRetransmisionDesde,
       NS_LOG_UNCOND ("Total paquetes: " << transmisor.TotalDatos());
     }
 
-    //Calculamos el intervalo de confianza al 90%.
+    //Calculamos el intervalo de confianza al 100%.
     z = TSTUDENT10*sqrt(ac_resultados.Var()/(ITERACIONES_IC));
     NS_LOG_INFO ("z = " << z);
 
