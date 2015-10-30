@@ -67,7 +67,7 @@ void
 BitAlternanteTx::VenceTemporizador()
 {
   NS_LOG_FUNCTION_NOARGS ();
-  NS_LOG_WARN ("Se ha producido una retransmisión.");
+  NS_LOG_LOGIC ("Se ha producido una retransmisión.");
 
   // Reenviamos el último paquete transmitido
   // Formamos el paquete

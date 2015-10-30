@@ -58,13 +58,19 @@ main (int argc, char *argv[])
   cmd.AddValue("tRetransmisionHasta","Valor final del temporizador de retransmisión",tRetransmisionHasta);
   cmd.Parse(argc,argv);
 
+  NS_LOG_INFO ("Se han configurado los siguientes argumentos de entrada:" << std::endl <<
+                "     -velocidadTxDesde:    " << velocidadTxDesde.GetBitRate()/(1.0e6) << "Mbps" << std::endl <<
+                "     -velocidadTxHasta:    " << velocidadTxHasta.GetBitRate()/(1.0e6) << "Mbps" << std::endl <<
+                "     -retardoPropDesde:    " << retardoPropDesde.GetDouble() << "ms" << std::endl <<
+                "     -retardoPropHasta:    " << retardoPropHasta.GetDouble() << "ms" << std::endl <<
+                "     -tRetransmisionDesde: " << tRetransmisionDesde.GetDouble() << "ms" << std::endl <<
+                "     -tRetransmisionHasta: " << tRetransmisionHasta.GetDouble() << "ms");
+
   //Calculamos los incrementos en las variables
   ////incremento en el retardo de propagacion para la grafica 1.
   double incrementoRetProp = (retardoPropHasta.GetDouble() - retardoPropDesde.GetDouble())/(NUMCURVAS-1);
   ////incremento en la velocidad de transmision para la grafica 2.
   double incrementoVelTx = (velocidadTxHasta.GetBitRate() - velocidadTxDesde.GetBitRate())/(NUMCURVAS-1);
-
-  
 
   //Calculamos las variables medias necesarias
   ////velocidad de transmision media para la grafica 1
@@ -84,6 +90,9 @@ main (int argc, char *argv[])
         retPropagacion += incrementoRetProp) 
   {
 
+    NS_LOG_LOGIC ("Entramos en el primer bucle para crear la primera grafica, " << 
+                  "con retardo de propagacion variable.");
+
     //Para imprimir el rotulo de las curvas indicando el retardo
     std::stringstream sstm;
     sstm << "Retardo prop.: " << retPropagacion <<"ms";
@@ -94,7 +103,7 @@ main (int argc, char *argv[])
 
     //No es necesario incluir el error del intervalo de confianza
     //ya que no se usan variables aleatorias para esta simulacion
-    //por lo que podemos aafirmar que el intervalo de confianza
+    //por lo que podemos afirmar que el intervalo de confianza
     //es la media de los valores (que son identicos al tratarse
     //de un experimento no aleatorio) con una probabilidad del 100%.
     //Por tanto z=0 y no es necesario incluir las barras de errores
@@ -117,6 +126,7 @@ main (int argc, char *argv[])
   //Cerramos el fichero
   fich.close();
 
+  NS_LOG_INFO("Primera grafica generada.");
 
   //Preparamos la gráfica 2
   Gnuplot plot2;
@@ -130,6 +140,9 @@ main (int argc, char *argv[])
         velocidadTx += incrementoVelTx) 
   {
 
+    NS_LOG_LOGIC ("Entramos en el segundo bucle para crear la segunda grafica, " << 
+                 "con retardo de propagacion variable.");
+
     //Para imprimir el rotulo de las curvas indicando el retardo
     std::stringstream sstm;
     sstm << "Vel. de Tx: " << velocidadTx/(1.0e6) <<"Mbps";
@@ -140,7 +153,7 @@ main (int argc, char *argv[])
 
     //No es necesario incluir el error del intervalo de confianza
     //ya que no se usan variables aleatorias para esta simulacion
-    //por lo que podemos aafirmar que el intervalo de confianza
+    //por lo que podemos afirmar que el intervalo de confianza
     //es la media de los valores (que son identicos al tratarse
     //de un experimento no aleatorio) con una probabilidad del 100%.
     //Por tanto z=0 y no es necesario incluir las barras de errores
@@ -162,6 +175,9 @@ main (int argc, char *argv[])
   fich2 << "pause -1" << std::endl;
   //Cerramos el fichero
   fich2.close();
+
+  NS_LOG_INFO("Segunda grafica generada.");
+
   return 0;
 }
 
@@ -170,6 +186,9 @@ void obtenerCurva (Gnuplot2dDataset *datosGrafica, Time tRetransmisionDesde,
                                   Time tRetransmisionHasta, int tamPktB, 
                                   double retPropagacion, uint64_t velTx) 
 {
+
+  NS_LOG_LOGIC("Se ha producido una llamada a la funcion obtenerCurva.");
+  NS_LOG_FUNCTION(datosGrafica << tRetransmisionDesde << tRetransmisionHasta << tamPktB << retPropagacion << velTx);
 
   /////incremento en el temporizador de retransmision.
   double incrementoTempRet = (tRetransmisionHasta.GetDouble() - tRetransmisionDesde.GetDouble())/(NUMPUNTOS-1);
@@ -180,6 +199,7 @@ void obtenerCurva (Gnuplot2dDataset *datosGrafica, Time tRetransmisionDesde,
         tempRetransmision <= tRetransmisionHasta.GetDouble();
         tempRetransmision += incrementoTempRet) 
   {
+    NS_LOG_LOGIC("Bucle interno con temporizador variable. Se ejecutara 10 veces.");
 
     // Componentes del escenario:
     // Dos nodos
