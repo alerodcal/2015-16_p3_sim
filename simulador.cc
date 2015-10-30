@@ -75,6 +75,7 @@ main (int argc, char *argv[])
   //Preparamos la gráfica 1
   Gnuplot plot1;
   plot1.SetTitle("Gráfica 1 Práctica 03");
+  plot1.SetLegend("Temporizador retransmisión (ms)", "Paquetes recibidos correctamente");
 
   //Iteramos 5 veces
   //5 valores para el retardo de propagacion. 
@@ -85,12 +86,19 @@ main (int argc, char *argv[])
 
     //Para imprimir el rotulo de las curvas indicando el retardo
     std::stringstream sstm;
-    sstm << "Retardo propagación: " << retPropagacion <<"ms";
+    sstm << "Retardo prop.: " << retPropagacion <<"ms";
     std::string result = sstm.str();
 
     Gnuplot2dDataset datos1 (result);
     datos1.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
+    //No es necesario incluir el error del intervalo de confianza
+    //ya que no se usan variables aleatorias para esta simulacion
+    //por lo que podemos aafirmar que el intervalo de confianza
+    //es la media de los valores (que son identicos al tratarse
+    //de un experimento no aleatorio) con una probabilidad del 100%.
+    //Por tanto z=0 y no es necesario incluir las barras de errores
+    //en las graficas. 
     //datos1.SetErrorBars (Gnuplot2dDataset::Y);
 
     //Obtenemos los datos de una curva por medio de 10 simulaciones
@@ -113,6 +121,7 @@ main (int argc, char *argv[])
   //Preparamos la gráfica 2
   Gnuplot plot2;
   plot2.SetTitle("Gráfica 2 Práctica 03");
+  plot2.SetLegend("Temporizador retransmisión (ms)", "Paquetes recibidos correctamente");
 
   //Iteramos 5 veces para obtener 5 curvas que representaran
   //5 valores para la velocidad de transmision.
@@ -123,12 +132,19 @@ main (int argc, char *argv[])
 
     //Para imprimir el rotulo de las curvas indicando el retardo
     std::stringstream sstm;
-    sstm << "Velocidad de transmisión: " << velocidadTx/(1.0e6) <<"Mbps";
+    sstm << "Vel. de Tx: " << velocidadTx/(1.0e6) <<"Mbps";
     std::string result = sstm.str();
 
     Gnuplot2dDataset datos2 (result);
     datos2.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
+    //No es necesario incluir el error del intervalo de confianza
+    //ya que no se usan variables aleatorias para esta simulacion
+    //por lo que podemos aafirmar que el intervalo de confianza
+    //es la media de los valores (que son identicos al tratarse
+    //de un experimento no aleatorio) con una probabilidad del 100%.
+    //Por tanto z=0 y no es necesario incluir las barras de errores
+    //en las graficas. 
     //datos2.SetErrorBars (Gnuplot2dDataset::Y);
 
     //Obtenemos los datos de una curva por medio de 10 simulaciones
@@ -202,13 +218,20 @@ void obtenerCurva (Gnuplot2dDataset *datosGrafica, Time tRetransmisionDesde,
     transmisor.SetStartTime (Seconds (1.0));
     transmisor.SetStopTime (Seconds (10.0));
 
-    NS_LOG_UNCOND ("Voy a simular con: " << tempRetransmision);
+    NS_LOG_UNCOND ("Voy a simular.");
     Simulator::Run ();
     Simulator::Destroy ();
 
     NS_LOG_UNCOND ("Total paquetes: " << transmisor.TotalDatos());
-               
+
     //Añadimos datos a la gráfica
     datosGrafica->Add(tempRetransmision, transmisor.TotalDatos());
+
+    //-------------------------IMPORTANTE------------------------
+    //No se añade el error a la grafica debido a que en el modelo
+    //no se usan variables aleatorias y por tanto el intervalo de 
+    //es en cada punto el punto en cuestion con un 100% de 
+    //probabilidad por lo que el error es 0
+    //-------------------------IMPORTANTE------------------------
   }
 }
